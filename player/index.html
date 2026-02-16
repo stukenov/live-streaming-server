@@ -1,0 +1,427 @@
+  <!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Live HLS Player — Apple Style</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Подключаем Hls.js с CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <style>
+    /* Сбрасываем отступы, чтобы iframe занял всё пространство */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Контейнер под видео и все overlay-элементы */
+    .player-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden; /* Чтобы элементы не "выходили" за границы */
+    }
+
+    /* Само видео */
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* Или 'contain', если важно сохранить пропорции */
+      display: block;
+      background-color: #000;
+    }
+
+    /* Скрываем нативные контролы (особенно в Safari) */
+    video::-webkit-media-controls {
+      display: none !important;
+    }
+
+    /* ----- Верхняя панель (LIVE) ----- */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 44px; /* Низкий бар в стиле iOS */
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: opacity 0.3s;
+    }
+
+    /* Красная точка + LIVE-текст по образцу Apple */
+    .live-container {
+      display: flex;
+      align-items: center;
+    }
+    .live-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #ff3b30; /* красный "Apple" */
+      margin-right: 6px;
+    }
+    .live-text {
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    /* ----- Нижняя панель управления (Play, Mute, FS) ----- */
+    .bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: opacity 0.3s;
+    }
+
+    /* Располагаем кнопки слева, с зазором */
+    .controls-left {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* Общий стиль кнопок */
+    .control-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 26px; /* Достаточно крупные для тач-устройств */
+      margin-right: 20px;
+      cursor: pointer;
+      outline: none;
+      line-height: 1;
+      transition: opacity 0.2s;
+    }
+    .control-btn:hover {
+      opacity: 0.7;
+    }
+
+    /* Скрытый класс для анимации автоскрытия (делает opacity=0 и отключает pointer-events) */
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Стиль для таймлайна */
+    .timeline-container {
+      position: absolute;
+      bottom: 60px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 15px;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: opacity 0.3s;
+    }
+    .timeline {
+      width: 80%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      position: relative;
+    }
+    .timeline-progress {
+      height: 100%;
+      background: #ff3b30; /* красный "Apple" */
+      width: 0;
+    }
+    .timeline-time {
+      position: absolute;
+      top: -20px;
+      color: #fff;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .timeline:hover .timeline-progress {
+      background: #ff6347; /* светло-красный при наведении */
+    }
+    .timeline:hover .timeline-time {
+      color: #ff6347; /* светло-красный при наведении */
+    }
+    .timeline-tooltip {
+      position: absolute;
+      top: -30px;
+      background: rgba(0, 0, 0, 0.75);
+      color: #fff;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+      white-space: nowrap;
+      display: none;
+    }
+    .timeline:hover .timeline-tooltip {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="player-container" id="playerContainer">
+  <!-- Видео -->
+  <video id="video"></video>
+
+  <!-- Верхняя панель с LIVE-индикатором -->
+  <div class="top-bar" id="topBar">
+    <div class="live-container">
+      <div class="live-indicator"></div>
+      <div class="live-text">Live</div>
+    </div>
+  </div>
+
+  <!-- Нижняя панель с кнопками управления -->
+  <div class="bottom-bar" id="bottomBar">
+    <div class="controls-left">
+      <button class="control-btn" id="playPauseBtn">►</button>
+      <button class="control-btn" id="muteBtn">🔈</button>
+      <button class="control-btn" id="fullscreenBtn">⛶</button>
+      <button class="control-btn" id="liveBtn">Live</button>
+    </div>
+  </div>
+
+  <!-- Таймлайн для DVR -->
+  <div class="timeline-container" id="timelineContainer">
+    <div class="timeline" id="timeline">
+      <div class="timeline-progress" id="timelineProgress"></div>
+      <div class="timeline-time" id="timelineTimeStart"></div>
+      <div class="timeline-time" id="timelineTimeEnd"></div>
+      <div class="timeline-tooltip" id="timelineTooltip"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const videoSrc = 'https://hls.live.31kz.adapto.kz/forward_live_31kz/index.m3u8';
+
+  const video = document.getElementById('video');
+  const playerContainer = document.getElementById('playerContainer');
+  const topBar = document.getElementById('topBar');
+  const bottomBar = document.getElementById('bottomBar');
+  const timelineContainer = document.getElementById('timelineContainer');
+  const timeline = document.getElementById('timeline');
+  const timelineProgress = document.getElementById('timelineProgress');
+  const timelineTimeStart = document.getElementById('timelineTimeStart');
+  const timelineTimeEnd = document.getElementById('timelineTimeEnd');
+  const timelineTooltip = document.getElementById('timelineTooltip');
+
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const muteBtn = document.getElementById('muteBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const liveBtn = document.getElementById('liveBtn');
+
+  // Инициализация HLS
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(videoSrc);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      attemptAutoplay();
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    // Нативный HLS (Safari)
+    video.src = videoSrc;
+    video.addEventListener('loadedmetadata', () => {
+      attemptAutoplay();
+    });
+  } else {
+    console.error('HLS не поддерживается в этом браузере.');
+  }
+
+  // Отключаем нативные контролы
+  video.controls = false;
+
+  // Попытка автозапуска
+  function attemptAutoplay() {
+    video.play().catch(() => {
+      console.warn('Автовоспроизведение заблокировано браузером.');
+    });
+  }
+
+  /**
+   * Кнопка PLAY / PAUSE
+   */
+  playPauseBtn.addEventListener('click', () => {
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  });
+  video.addEventListener('play', () => {
+    playPauseBtn.textContent = '❚❚'; // Иконка "Пауза"
+  });
+  video.addEventListener('pause', () => {
+    playPauseBtn.textContent = '►'; // Иконка "Плей"
+  });
+
+  /**
+   * Кнопка MUTE / UNMUTE
+   */
+  muteBtn.addEventListener('click', () => {
+    video.muted = !video.muted;
+    muteBtn.textContent = video.muted ? '🔇' : '🔈';
+  });
+
+  /**
+   * Кнопка FULLSCREEN
+   */
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      if (playerContainer.requestFullscreen) {
+        playerContainer.requestFullscreen();
+      } else if (playerContainer.webkitRequestFullscreen) {
+        playerContainer.webkitRequestFullscreen();
+      } else if (playerContainer.msRequestFullscreen) {
+        playerContainer.msRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+  });
+
+  /**
+   * Кнопка LIVE
+   */
+  liveBtn.addEventListener('click', () => {
+    video.src = videoSrc;
+    video.play();
+  });
+
+  // Таймлайн для DVR
+  const totalDuration = 24 * 60 * 60; // 24 часа в секундах
+  const startTime = new Date(Date.now() - totalDuration * 1000);
+  timelineTimeStart.textContent = formatTime(startTime);
+  timelineTimeEnd.style.right = '0';
+
+  function updateCurrentTime() {
+    timelineTimeEnd.textContent = formatTime(new Date());
+  }
+
+  setInterval(updateCurrentTime, 60000); // Update every minute
+
+  timeline.addEventListener('click', (event) => {
+    const clickPosition = event.offsetX / timeline.offsetWidth;
+    const seekTime = totalDuration * clickPosition;
+    const seekDate = new Date(Date.now() - totalDuration * 1000 + seekTime * 1000);
+    const seekUrl = `http://localhost:9996/get?path=live_31kz&start=${seekDate.toISOString()}&duration=${totalDuration}`;
+    video.src = seekUrl;
+    video.play();
+  });
+
+  // Обновление прогресса таймлайна для DVR
+  video.addEventListener('timeupdate', () => {
+    const currentTime = video.currentTime;
+    const progress = (currentTime / totalDuration) * 100;
+    timelineProgress.style.width = `${progress}%`;
+  });
+
+  /**
+   * Автоматическое скрытие панелей при бездействии (как на iOS)
+   */
+  let hideControlsTimeout;
+
+  function showControls() {
+    topBar.classList.remove('hidden');
+    bottomBar.classList.remove('hidden');
+    timelineContainer.classList.remove('hidden');
+    // Сбрасываем таймер
+    clearTimeout(hideControlsTimeout);
+
+    // Если видео играет, запланируем скрытие
+    if (!video.paused) {
+      hideControlsTimeout = setTimeout(hideControls, 3000);
+    }
+  }
+
+  function hideControls() {
+    // Если видео не на паузе (при паузе лучше не скрывать)
+    if (!video.paused) {
+      topBar.classList.add('hidden');
+      bottomBar.classList.add('hidden');
+      timelineContainer.classList.add('hidden');
+    }
+  }
+
+  // При движении мыши / клике / тапе – показываем управление
+  playerContainer.addEventListener('mousemove', showControls);
+  playerContainer.addEventListener('click', showControls);
+  playerContainer.addEventListener('touchstart', showControls);
+
+  // При старте видео - показываем на пару секунд
+  video.addEventListener('play', showControls);
+  // На паузе - явно показываем
+  video.addEventListener('pause', () => {
+    topBar.classList.remove('hidden');
+    bottomBar.classList.remove('hidden');
+    timelineContainer.classList.remove('hidden');
+    clearTimeout(hideControlsTimeout);
+  });
+
+  // Первичная инициализация (чтобы панели были видны при загрузке)
+  showControls();
+
+  // Обновление прогресса таймлайна
+  video.addEventListener('timeupdate', () => {
+    const progress = (video.currentTime / video.duration) * 100;
+    timelineProgress.style.width = `${progress}%`;
+  });
+
+  // Показ времени при наведении на таймлайн
+  timeline.addEventListener('mousemove', (event) => {
+    const hoverPosition = event.offsetX / timeline.offsetWidth;
+    const hoverTime = totalDuration * hoverPosition;
+    const hoverDate = new Date(Date.now() - totalDuration * 1000 + hoverTime * 1000);
+    timelineTooltip.textContent = formatTime(hoverDate);
+    timelineTooltip.style.left = `${event.offsetX}px`;
+  });
+
+  function formatTime(date) {
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    if (date.toDateString() === now.toDateString()) {
+      return `${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return `${date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    }
+  }
+</script>
+
+</body>
+</html>

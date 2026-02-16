@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: |
+          api/package-lock.json
+          dash/package-lock.json
+
+    # API checks
+    - name: API - Install dependencies
+      run: cd api && npm ci
+
+    - name: API - Run linting
+      run: cd api && npm run lint
+
+    - name: API - Run tests
+      run: cd api && npm run test
+
+    - name: API - Build
+      run: cd api && npm run build
+
+    # Dashboard checks
+    - name: Dashboard - Install dependencies
+      run: cd dash && npm ci
+
+    - name: Dashboard - Run linting
+      run: cd dash && npm run lint
+
+    - name: Dashboard - Build
+      run: cd dash && npm run build
