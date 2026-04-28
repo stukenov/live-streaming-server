@@ -1,401 +1,308 @@
-# Live Streaming Server
+<p align="center">
+  <h1 align="center">Live Streaming Server</h1>
+  <p align="center">
+    Self-hosted live streaming infrastructure with RTMP ingest, HLS delivery, real-time dashboard, and REST API.
+  </p>
+</p>
 
-A complete live streaming solution with NestJS API, Next.js dashboard, HLS player, and MediaMTX integration for real-time video streaming.
+<p align="center">
+  <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#architecture">Architecture</a> &bull;
+  <a href="#features">Features</a> &bull;
+  <a href="#configuration">Configuration</a> &bull;
+  <a href="#deployment">Deployment</a> &bull;
+  <a href="#contributing">Contributing</a>
+</p>
 
-## Features
+---
 
-- **Live Streaming**: Real-time HLS streaming with MediaMTX
-- **Management Dashboard**: Modern Next.js dashboard for stream management
-- **REST API**: NestJS-powered API for stream control
-- **Web Player**: Lightweight HLS.js-based video player
-- **Multi-Stream Support**: Handle multiple concurrent live streams
-- **Stream Monitoring**: Real-time stream health monitoring
-- **DVR Support**: Time-shift viewing capabilities
-- **Low Latency**: Optimized for minimal streaming delay
+## Why Live Streaming Server?
 
-## Architecture
+Most live streaming solutions are either expensive SaaS platforms or require stitching together dozens of tools. This project gives you a complete, production-ready streaming stack in a single repository:
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Streamer  │────▶│  MediaMTX   │────▶│  HLS Output │
-└─────────────┘     └─────────────┘     └─────────────┘
-                            │                    │
-                            ▼                    ▼
-                    ┌─────────────┐     ┌─────────────┐
-                    │  NestJS API │     │   Players   │
-                    └─────────────┘     └─────────────┘
-                            │
-                            ▼
-                    ┌─────────────┐
-                    │  Dashboard  │
-                    └─────────────┘
-```
-
-## Tech Stack
-
-### API (`/api`)
-- **Framework**: NestJS 11
-- **Runtime**: Node.js with TypeScript
-- **Testing**: Jest
-- **Config**: @nestjs/config
-
-### Dashboard (`/dash`)
-- **Framework**: Next.js 15 (with Turbopack)
-- **UI**: React 19, TypeScript
-- **Styling**: Tailwind CSS 4
-- **Components**: Radix UI
-- **Icons**: Lucide React
-
-### Player (`/player`)
-- **Framework**: Express.js
-- **Video**: HLS.js
-- **Session**: express-session
-
-### Media Server (`/media`)
-- **Server**: MediaMTX
-- **Protocol**: HLS, RTMP, RTSP
-- **Format**: H.264, AAC
-
-## Prerequisites
-
-- Node.js 18+
-- MediaMTX (included in `/media`)
-- FFmpeg (for streaming to server)
-- OBS Studio or similar streaming software
+- **One command to start** -- `docker compose up` and you're streaming
+- **Full control** -- self-hosted, no vendor lock-in, MIT licensed
+- **Modern stack** -- NestJS, Next.js 15, MediaMTX, TypeScript throughout
+- **Protocol flexibility** -- ingest via RTMP, RTSP, WebRTC, or SRT; deliver via HLS, DASH, or WebRTC
 
 ## Quick Start
 
-### 1. Clone Repository
+### Option 1: Docker (Recommended)
 
 ```bash
 git clone https://github.com/stukenov/live-streaming-server.git
 cd live-streaming-server
+docker compose up -d
 ```
 
-### 2. Environment Setup
+Services will be available at:
 
-Copy example environment files:
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Dashboard | http://localhost:3000 | Stream monitoring UI |
+| API | http://localhost:3001 | REST API |
+| HLS Output | http://localhost:8888 | Video playback |
+| RTMP Ingest | rtmp://localhost:1935 | Stream input |
+| Player | http://localhost:3010 | Embeddable player |
+
+### Option 2: Manual Setup
+
+**Prerequisites:** Node.js 18+, MediaMTX
+
 ```bash
+# Install dependencies
+make install
+
+# Copy environment files
 cp .env.example .env
 cp api/.env.example api/.env
 cp dash/.env.example dash/.env
+
+# Start MediaMTX
+cd media && ./mediamtx &
+
+# Start all services
+make dev
 ```
 
-Configure `.env`:
-```env
-NODE_ENV=development
-PORT=3001
-ALLOWED_ORIGINS=http://localhost:3000
-MEDIA_SERVER_URL=http://localhost:8889
-```
+### Start Streaming
 
-### 3. Install Dependencies
-
-Install for all components:
-```bash
-# API
-cd api && npm install && cd ..
-
-# Dashboard
-cd dash && npm install && cd ..
-
-# Player
-cd player && npm install && cd ..
-```
-
-### 4. Start MediaMTX
-
-```bash
-cd media
-./mediamtx
-```
-
-MediaMTX will start on default ports:
-- HLS: 8888
-- RTMP: 1935
-- RTSP: 8554
-
-### 5. Start API
-
-```bash
-cd api
-npm run dev
-```
-
-API runs on `http://localhost:3001`
-
-### 6. Start Dashboard
-
-```bash
-cd dash
-npm run dev
-```
-
-Dashboard runs on `http://localhost:3000`
-
-### 7. Start Player (Optional)
-
-```bash
-cd player
-npm start
-```
-
-Player runs on `http://localhost:8080`
-
-## Usage
-
-### Streaming to Server
-
-#### Using OBS Studio
-
-1. Open OBS Studio
-2. Go to Settings → Stream
-3. Set:
-   - Service: Custom
-   - Server: `rtmp://localhost:1935/live`
-   - Stream Key: `your-stream-name`
+**Using OBS Studio:**
+1. Settings → Stream → Custom
+2. Server: `rtmp://localhost:1935/live`
+3. Stream Key: `my-stream`
 4. Click "Start Streaming"
 
-#### Using FFmpeg
-
+**Using FFmpeg:**
 ```bash
 ffmpeg -re -i input.mp4 \
   -c:v libx264 -c:a aac \
-  -f flv rtmp://localhost:1935/live/your-stream-name
+  -f flv rtmp://localhost:1935/live/my-stream
 ```
 
-### Viewing Stream
-
-Open in browser:
+**Watch your stream:**
 ```
-http://localhost:8888/live/your-stream-name/index.m3u8
+http://localhost:8888/live/my-stream/index.m3u8
 ```
 
-Or use the web player:
+## Architecture
+
 ```
-http://localhost:8080/?stream=your-stream-name
+┌─────────────────────────────────────────────────────────────┐
+│                     Live Streaming Server                    │
+│                                                             │
+│  ┌──────────┐     ┌───────────┐     ┌──────────────────┐   │
+│  │ Streamer │────▶│ MediaMTX  │────▶│  HLS / WebRTC    │   │
+│  │ (RTMP)   │     │  :1935    │     │  :8888           │   │
+│  └──────────┘     └─────┬─────┘     └────────┬─────────┘   │
+│                         │                     │             │
+│                         ▼                     ▼             │
+│                   ┌───────────┐        ┌────────────┐      │
+│                   │  API      │        │  Player    │      │
+│                   │  :3001    │        │  :3010     │      │
+│                   └─────┬─────┘        └────────────┘      │
+│                         │                                   │
+│                         ▼                                   │
+│                   ┌───────────┐                             │
+│                   │ Dashboard │                             │
+│                   │  :3000    │                             │
+│                   └───────────┘                             │
+└─────────────────────────────────────────────────────────────┘
 ```
+
+### Components
+
+| Component | Stack | Purpose |
+|-----------|-------|---------|
+| **API** (`/api`) | NestJS 11, TypeScript | Stream management REST API |
+| **Dashboard** (`/dash`) | Next.js 15, React 19, Tailwind CSS 4 | Real-time monitoring UI |
+| **Player** (`/player`) | Express.js, HLS.js | Embeddable video player with session security |
+| **Media Server** (`/media`) | MediaMTX | Multi-protocol streaming engine |
+
+## Features
+
+### Streaming
+- Multi-protocol ingest: RTMP, RTSP, WebRTC, SRT
+- Multi-protocol delivery: HLS, DASH, Low-Latency HLS, WebRTC
+- DVR / time-shift viewing
+- Configurable latency (sub-second with WebRTC, 1-4s with LL-HLS)
+- Multi-stream support with path-based routing
+
+### Management
+- Real-time dashboard with auto-refresh
+- Stream health monitoring (bytes in/out, uptime, status)
+- Live preview with inline player
+- REST API for programmatic control
+
+### Security
+- Session-based player access with UUID tokens
+- Configurable CORS policies
+- Stream key authentication support
+- API endpoint protection
+
+### Developer Experience
+- Docker Compose for one-command setup
+- Hot-reload development mode for all services
+- CI/CD with GitHub Actions
+- TypeScript throughout the stack
+- Makefile shortcuts for common operations
+
+## API Endpoints
+
+```
+GET    /              Health check
+GET    /media/paths   List available stream paths
+GET    /media/list    List active HLS connections
+GET    /media/rtmp    List active RTMP connections
+GET    /media/stream/:name   Get stream details
+DELETE /media/stream/:name   Kick/disconnect a stream
+```
+
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file from the template:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3001` | API server port |
+| `ALLOWED_ORIGINS` | `http://localhost:3000` | CORS origins (comma-separated) |
+| `MEDIA_SERVER_URL` | `http://localhost:9997` | MediaMTX API endpoint |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3001` | Dashboard → API connection |
+| `NEXT_PUBLIC_HLS_URL` | `http://localhost:8888` | Dashboard → HLS preview |
+| `SESSION_SECRET` | -- | Player session encryption key |
+
+### MediaMTX (`media/mediamtx.yml`)
+
+Key tuning parameters:
+
+```yaml
+# Low latency (1-2s delay)
+hlsSegmentDuration: 1s
+hlsPartDuration: 200ms
+
+# Better compatibility (4-6s delay)
+hlsSegmentDuration: 4s
+hlsPartDuration: 1s
+```
+
+See the [MediaMTX documentation](https://github.com/bluenviron/mediamtx) for the full configuration reference.
 
 ## Project Structure
 
 ```
 .
-├── api/                    # NestJS API
+├── api/                    # NestJS REST API
 │   ├── src/
-│   │   ├── app.module.ts   # Main module
-│   │   ├── main.ts         # Entry point
-│   │   └── media/          # Media endpoints
-│   ├── test/               # Tests
+│   │   ├── main.ts         # Entry point with CORS setup
+│   │   ├── app.module.ts   # Root module
+│   │   └── media/          # Media management module
+│   ├── Dockerfile
 │   └── package.json
 │
 ├── dash/                   # Next.js Dashboard
 │   ├── src/
-│   │   ├── app/            # App router pages
-│   │   └── components/     # React components
+│   │   ├── app/            # App Router pages
+│   │   ├── components/     # UI components
+│   │   └── lib/            # API client & utilities
+│   ├── Dockerfile
 │   └── package.json
 │
-├── player/                 # Web Player
-│   ├── server.js           # Express server
-│   ├── index.html          # Player page
-│   └── script.js           # HLS.js integration
+├── player/                 # Embeddable HLS Player
+│   ├── server.js           # Express server with session auth
+│   ├── Dockerfile
+│   └── package.json
 │
-├── media/                  # MediaMTX
-│   ├── mediamtx            # Server binary
-│   ├── mediamtx.yml        # Configuration
-│   └── hls/                # HLS output
+├── media/                  # MediaMTX Configuration
+│   └── mediamtx.yml        # Streaming server config
 │
-├── .github/                # CI/CD workflows
-├── .env.example            # Environment template
-└── README.md               # This file
+├── examples/               # Example player implementations
+│   ├── index.html          # Basic live player
+│   └── dvr.html            # DVR player with time-shift
+│
+├── docker-compose.yml      # Production deployment
+├── Makefile                # Developer shortcuts
+└── .github/workflows/      # CI/CD pipeline
 ```
 
-## API Endpoints
+## Deployment
 
-### Media
+### Production with Docker
 
-- `GET /media/paths` - Get available media paths
-- `GET /media/list` - List all active streams
-- `POST /media/stream` - Create/configure stream
-- `DELETE /media/stream/:id` - Delete stream
+```bash
+# Build and start
+docker compose up -d --build
 
-### Health
+# View logs
+docker compose logs -f
 
-- `GET /` - API health check
-
-## Configuration
-
-### MediaMTX Configuration (`media/mediamtx.yml`)
-
-Key settings:
-```yaml
-# HLS configuration
-paths:
-  all:
-    source: publisher
-    
-# RTMP configuration
-rtmpAddress: :1935
-
-# HLS configuration
-hlsAddress: :8888
-hlsServerPath: hls
+# Scale (if needed)
+docker compose up -d --scale player=3
 ```
 
-### API Configuration
+### Scaling Recommendations
 
-Environment variables:
-- `NODE_ENV` - Environment (development/production)
-- `PORT` - API server port
-- `ALLOWED_ORIGINS` - CORS allowed origins (comma-separated)
-- `MEDIA_SERVER_URL` - MediaMTX API URL
+- **CDN Integration**: Point a CDN at the HLS output port (8888) for edge caching
+- **Multiple MediaMTX**: Run origin/edge topology for geographic distribution
+- **Reverse Proxy**: Place Nginx/Caddy in front for TLS termination and load balancing
+- **Monitoring**: Expose MediaMTX metrics to Prometheus/Grafana
 
 ## Development
 
-### Running in Dev Mode
-
 ```bash
-# API with hot reload
-cd api && npm run dev
+# Install all dependencies
+make install
 
-# Dashboard with Turbopack
-cd dash && npm run dev
+# Start all services with hot reload
+make dev
 
-# Player
-cd player && npm start
+# Run tests
+make test
+
+# Run linters
+make lint
+
+# Clean build artifacts
+make clean
 ```
-
-### Building for Production
-
-```bash
-# API
-cd api && npm run build && npm run start:prod
-
-# Dashboard
-cd dash && npm run build && npm start
-
-# MediaMTX (already compiled binary)
-cd media && ./mediamtx
-```
-
-### Testing
-
-```bash
-# API unit tests
-cd api && npm test
-
-# API e2e tests
-cd api && npm run test:e2e
-
-# Test coverage
-cd api && npm run test:cov
-```
-
-## Stream Protocols
-
-### Supported Input Protocols
-- RTMP (Real-Time Messaging Protocol)
-- RTSP (Real-Time Streaming Protocol)
-- WebRTC
-- SRT (Secure Reliable Transport)
-
-### Supported Output Protocols
-- HLS (HTTP Live Streaming)
-- DASH (Dynamic Adaptive Streaming)
-- Low-Latency HLS
-- WebRTC
-
-## Performance Optimization
-
-### Recommended Settings
-
-For low latency:
-```yaml
-hlsSegmentDuration: 1s
-hlsPartDuration: 200ms
-```
-
-For better compatibility:
-```yaml
-hlsSegmentDuration: 4s
-hlsPartDuration: 1s
-```
-
-### Scaling
-
-- Use CDN for HLS output
-- Load balance multiple MediaMTX instances
-- Implement stream origin/edge architecture
-- Cache HLS segments at edge locations
 
 ## Troubleshooting
 
-### Stream Not Playing
-
-1. Check MediaMTX is running: `http://localhost:8889/`
-2. Verify stream is publishing: Check dashboard
-3. Test HLS URL directly in VLC
-4. Check browser console for CORS errors
-
-### High Latency
-
-1. Reduce HLS segment duration
-2. Enable low-latency HLS mode
-3. Use WebRTC for sub-second latency
-4. Optimize encoder settings
-
-### Connection Issues
-
-1. Check firewall settings (ports 1935, 8888, 8889)
-2. Verify CORS configuration in API
-3. Check MediaMTX logs
-4. Test with direct IP instead of localhost
-
-## Security Considerations
-
-- Implement stream key authentication
-- Use HTTPS for dashboard and API
-- Secure MediaMTX API endpoints
-- Rate limit API requests
-- Validate stream inputs
-- Implement user authentication
-
-## CI/CD
-
-GitHub Actions workflow included:
-- Automated testing
-- Build verification
-- Dependency updates (Dependabot)
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Author
-
-Saken Tukenov
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Acknowledgments
-
-- [MediaMTX](https://github.com/bluenviron/mediamtx) - Media server
-- [NestJS](https://nestjs.com/) - Backend framework
-- [Next.js](https://nextjs.org/) - Frontend framework
-- [HLS.js](https://github.com/video-dev/hls.js/) - Video player
-
-## Support
-
-For issues and questions:
-- GitHub Issues: [Create an issue](https://github.com/stukenov/live-streaming-server/issues)
-- Documentation: This README
+| Problem | Solution |
+|---------|----------|
+| Stream not playing | Verify MediaMTX is running: `curl http://localhost:9997/v3/paths/list` |
+| High latency | Reduce `hlsSegmentDuration` in `mediamtx.yml` |
+| CORS errors | Check `ALLOWED_ORIGINS` in API `.env` |
+| Dashboard empty | Confirm API is reachable at `NEXT_PUBLIC_API_URL` |
+| Port conflicts | Change ports in `.env` and `docker-compose.yml` |
 
 ## Roadmap
 
-- [ ] Add authentication system
-- [ ] Implement stream recording
-- [ ] Add chat integration
-- [ ] Support multiple quality levels
-- [ ] Add stream analytics
-- [ ] Implement CDN integration
+- [ ] User authentication and role-based access
+- [ ] Stream recording and VOD playback
+- [ ] Live chat integration
+- [ ] Adaptive bitrate transcoding
+- [ ] Stream analytics and viewer metrics
+- [ ] Webhook notifications (stream start/stop)
+- [ ] Multi-node clustering
+- [ ] Kubernetes Helm chart
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+MIT License -- see [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+- [MediaMTX](https://github.com/bluenviron/mediamtx) -- Multi-protocol streaming engine
+- [NestJS](https://nestjs.com/) -- Backend framework
+- [Next.js](https://nextjs.org/) -- Frontend framework
+- [HLS.js](https://github.com/video-dev/hls.js/) -- JavaScript HLS player

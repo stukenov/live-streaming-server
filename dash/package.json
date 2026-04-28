@@ -1,6 +1,9 @@
 {
-  "name": "dash",
-  "version": "0.1.0",
+  "name": "@live-streaming-server/dashboard",
+  "version": "1.0.0",
+  "description": "Next.js dashboard for live streaming server monitoring and management",
+  "author": "Saken Tukenov",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

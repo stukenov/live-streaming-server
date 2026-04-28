@@ -45,7 +45,7 @@ export default function Home() {
       
       setError('')
     } catch (error) {
-      setError('Не удалось загрузить медиа подключения')
+      setError('Failed to load media connections')
       console.error('Failed to load media connections:', error)
     } finally {
       setIsRefreshing(false)
@@ -61,11 +61,11 @@ export default function Home() {
   }
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Неизвестно'
+    if (!dateString) return 'Unknown'
     const date = new Date(dateString)
-    return date.toLocaleString('ru-RU', {
+    return date.toLocaleString(undefined, {
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
@@ -89,7 +89,7 @@ export default function Home() {
                 disabled={isRefreshing}
               >
                 <RefreshCcw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                {isRefreshing ? 'Обновление...' : 'Повторить'}
+                {isRefreshing ? 'Refreshing...' : 'Retry'}
               </Button>
             </AlertDescription>
           </Alert>
@@ -97,8 +97,8 @@ export default function Home() {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-blue-600">Live сигналы</h2>
-            <p className="text-slate-600 text-sm">Мониторинг и управление трансляциями</p>
+            <h2 className="text-2xl font-bold text-blue-600">Live Streams</h2>
+            <p className="text-slate-600 text-sm">Monitor and manage active broadcasts</p>
           </div>
           <div className="flex items-center gap-4">
           </div>
@@ -119,9 +119,9 @@ export default function Home() {
           {mediaConnections.length === 0 && !error && (
             <Card className="p-8 text-center border-dashed">
               <Database className="h-12 w-12 mx-auto mb-4 text-slate-200" />
-              <h3 className="text-xl font-semibold mb-2">Нет активных подключений</h3>
+              <h3 className="text-xl font-semibold mb-2">No active connections</h3>
               <p className="text-slate-600 max-w-md mx-auto">
-                Для начала работы подключите источник трансляции через стриминговое ПО
+                Start streaming by connecting a source via OBS Studio, FFmpeg, or any RTMP-compatible software
               </p>
             </Card>
           )}

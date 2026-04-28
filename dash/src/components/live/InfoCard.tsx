@@ -8,13 +8,13 @@ export function InfoCard() {
           <div>
             <h4 className="font-medium text-blue-900 mb-2">RTMP URL</h4>
             <div className="p-2 bg-white rounded border border-blue-100">
-              <code className="text-sm select-all">rtmp://localhost:1935/live</code>
+              <code className="text-sm select-all">rtmp://your-server:1935/live</code>
             </div>
           </div>
           <div>
-            <h4 className="font-medium text-blue-900 mb-2">Код для встраивания</h4>
+            <h4 className="font-medium text-blue-900 mb-2">Embed Code</h4>
             <div className="p-2 bg-white rounded border border-blue-100">
-              <code className="text-sm select-all break-all">{'<iframe src="http://localhost:8888/live/" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>'}</code>
+              <code className="text-sm select-all break-all">{'<iframe src="http://your-server:8888/live/" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>'}</code>
             </div>
           </div>
         </div>

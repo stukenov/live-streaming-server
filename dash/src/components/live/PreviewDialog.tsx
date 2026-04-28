@@ -15,6 +15,9 @@ interface PreviewDialogProps {
 }
 
 export function PreviewDialog({ name, ready }: PreviewDialogProps) {
+  const hlsBaseUrl = process.env.NEXT_PUBLIC_HLS_URL || 'http://localhost:8888'
+  const streamUrl = `${hlsBaseUrl}/${name}/`
+
   const openInNewWindow = (url: string) => {
     window.open(url, '_blank', 'noopener,noreferrer')
   }
@@ -22,29 +25,29 @@ export function PreviewDialog({ name, ready }: PreviewDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button 
+        <Button
           variant="outline"
           disabled={!ready}
         >
           <Play className="h-4 w-4 mr-2" />
-          Предпросмотр
+          Preview
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle>Предпросмотр: {name || 'Без названия'}</DialogTitle>
+          <DialogTitle>Preview: {name || 'Untitled'}</DialogTitle>
         </DialogHeader>
         <div className="aspect-video rounded overflow-hidden">
-          <iframe 
-            src="http://localhost:8888/live/"
+          <iframe
+            src={streamUrl}
             className="w-full h-full"
             allow="autoplay; fullscreen"
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => openInNewWindow('http://localhost:8888/live/')}>
+          <Button variant="outline" onClick={() => openInNewWindow(streamUrl)}>
             <ExternalLink className="h-4 w-4 mr-2" />
-            В новом окне
+            Open in new window
           </Button>
         </DialogFooter>
       </DialogContent>

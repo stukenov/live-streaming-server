@@ -1,0 +1,46 @@
+{
+  "name": "live-streaming-server",
+  "version": "1.0.0",
+  "description": "Self-hosted live streaming server with RTMP ingest, HLS delivery, management API, and real-time dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n api,dash,player -c blue,green,yellow \"npm run dev:api\" \"npm run dev:dash\" \"npm run dev:player\"",
+    "dev:api": "cd api && npm run dev",
+    "dev:dash": "cd dash && npm run dev",
+    "dev:player": "cd player && npm start",
+    "build": "npm run build:api && npm run build:dash",
+    "build:api": "cd api && npm run build",
+    "build:dash": "cd dash && npm run build",
+    "install:all": "cd api && npm install && cd ../dash && npm install && cd ../player && npm install",
+    "lint": "cd api && npm run lint && cd ../dash && npm run lint",
+    "test": "cd api && npm test",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build",
+    "docker:logs": "docker compose logs -f"
+  },
+  "keywords": [
+    "live-streaming",
+    "hls",
+    "rtmp",
+    "mediamtx",
+    "video-streaming",
+    "media-server",
+    "self-hosted",
+    "webrtc",
+    "nestjs",
+    "nextjs"
+  ],
+  "author": "Saken Tukenov",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stukenov/live-streaming-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stukenov/live-streaming-server/issues"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

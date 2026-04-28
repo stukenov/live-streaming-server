@@ -42,17 +42,10 @@ Thumbs.db
 *.swo
 *~
 
-# Media files
-media/hls/**/*
-!media/hls/.gitkeep
-*.ts
+# HLS segments (video .ts files and playlists)
+media/hls/
+player/hls/
 *.m3u8
-!**/*.ts # TypeScript files are OK
-!**/*.tsx
-
-# Player
-player/hls/**/*
-!player/hls/.gitkeep
 
 # OS
 .DS_Store

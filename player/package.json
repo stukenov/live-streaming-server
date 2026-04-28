@@ -1,7 +1,9 @@
 {
-  "name": "player-server",
+  "name": "@live-streaming-server/player",
   "version": "1.0.0",
-  "description": "Simple Express server to serve player files",
+  "description": "Secure HLS video player with session-based stream access",
+  "author": "Saken Tukenov",
+  "license": "MIT",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

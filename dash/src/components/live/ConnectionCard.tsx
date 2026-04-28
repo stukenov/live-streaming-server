@@ -20,9 +20,9 @@ export function ConnectionCard({ connection: conn, formatBytes, formatDate }: Co
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Signal className={conn.ready ? 'text-green-500' : 'text-red-500'} />
-            <h3 className="text-lg font-semibold">{conn.name || 'Без названия'}</h3>
+            <h3 className="text-lg font-semibold">{conn.name || 'Untitled'}</h3>
             <Badge variant={conn.ready ? "default" : "destructive"}>
-              {conn.ready ? 'Активен' : 'Не активен'}
+              {conn.ready ? 'Active' : 'Inactive'}
             </Badge>
           </div>
           
@@ -32,13 +32,13 @@ export function ConnectionCard({ connection: conn, formatBytes, formatDate }: Co
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Database className="h-4 w-4 text-blue-500" />
-            <span className="text-slate-600">Тип:</span>
-            <span className="font-medium">{conn.source?.type === 'rtmpConn' ? 'RTMP' : 'Неизвестно'}</span>
+            <span className="text-slate-600">Type:</span>
+            <span className="font-medium">{conn.source?.type === 'rtmpConn' ? 'RTMP' : 'Unknown'}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-blue-500" />
-            <span className="text-slate-600">Начало:</span>
+            <span className="text-slate-600">Started:</span>
             <span className="font-medium">{formatDate(conn.readyTime)}</span>
           </div>
 
