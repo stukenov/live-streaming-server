@@ -1,7 +1,15 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/api"
+    schedule:
+      interval: "weekly"
+    groups:
+      all-updates:
+        patterns:
+          - "*"
+  - package-ecosystem: "npm"
+    directory: "/dash"
     schedule:
       interval: "weekly"
     groups:
