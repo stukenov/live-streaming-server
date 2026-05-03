@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@v3
 
       - name: Approve pull request
         if: ${{ steps.metadata.outputs.is-security-update == 'true' || contains(steps.metadata.outputs.update-type, 'version-update:semver-minor') || contains(steps.metadata.outputs.update-type, 'version-update:semver-patch') }}
