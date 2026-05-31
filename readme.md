@@ -6,6 +6,18 @@
 </p>
 
 <p align="center">
+  <strong>A complete, self-hosted RTMP / HLS / WebRTC streaming stack you can run with a single command -- no SaaS, no vendor lock-in.</strong>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green.svg"></a>
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white">
+  <img alt="NestJS" src="https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white">
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white">
+  <img alt="MediaMTX" src="https://img.shields.io/badge/MediaMTX-RTMP%20%7C%20HLS%20%7C%20WebRTC-007ACC">
+</p>
+
+<p align="center">
   <a href="#quick-start">Quick Start</a> &bull;
   <a href="#architecture">Architecture</a> &bull;
   <a href="#features">Features</a> &bull;
@@ -13,6 +25,8 @@
   <a href="#deployment">Deployment</a> &bull;
   <a href="#contributing">Contributing</a>
 </p>
+
+> **Screenshot:** A dashboard screenshot belongs here. Capture the running dashboard at `http://localhost:3000`, drop the image into the repo (e.g. `docs/dashboard.png`), and reference it with `![Dashboard](docs/dashboard.png)`.
 
 ---
 
@@ -295,6 +309,14 @@ make clean
 ## Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Related projects
+
+Live Streaming Server is part of a broader self-hosted broadcast suite. If you're building an end-to-end streaming or playout pipeline, these companion projects pair well with it:
+
+- [fast-tv-playout-core](https://github.com/stukenov/fast-tv-playout-core) -- High-performance TV playout core for scheduled, continuous broadcast.
+- [vod-streaming-server](https://github.com/stukenov/vod-streaming-server) -- Video-on-demand streaming server for on-demand catalogs and replays.
+- [tv-playout-backend](https://github.com/stukenov/tv-playout-backend) -- Backend services for TV playout scheduling and channel management.
 
 ## License
 
