@@ -16,12 +16,6 @@ export default function Home() {
   const [mediaConnections, setMediaConnections] = useState<MediaPath[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  useEffect(() => {
-    loadMediaConnections()
-    const interval = setInterval(loadMediaConnections, 5000)
-    return () => clearInterval(interval)
-  }, [])
-
   const loadMediaConnections = async () => {
     try {
       setIsRefreshing(true)
@@ -51,6 +45,12 @@ export default function Home() {
       setIsRefreshing(false)
     }
   }
+
+  useEffect(() => {
+    loadMediaConnections()
+    const interval = setInterval(loadMediaConnections, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   const formatBytes = (bytes: number | null) => {
     if (!bytes || bytes === 0) return '0 B'

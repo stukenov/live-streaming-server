@@ -23,6 +23,10 @@ updates:
         patterns:
           - "*"
     ignore:
+      # eslint-plugin-react (via eslint-config-next) supports ESLint 9 at
+      # most, so hold the eslint major back too.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
       # ts-jest 29 peers on typescript "<7" and Next 16 rejects the TS 7
       # compiler API, so major TypeScript bumps break the build here.
       # Remove once both support TypeScript 7.

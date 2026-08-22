@@ -5,10 +5,7 @@ import { AppService } from './app.service';
 import { MediaModule } from './media/media.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
-    MediaModule,
-  ],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), MediaModule],
   controllers: [AppController],
   providers: [AppService],
 })

@@ -1,16 +1,20 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTypescript from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
+// eslint-config-next 16 ships flat configs, so they are spread directly.
+// `next lint` was removed in Next 16 — the lint script calls eslint itself.
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
+  {
+    rules: {
+      // eslint-plugin-react-hooks 7 added the React Compiler rules. The
+      // dashboard polls on mount and flips a refreshing flag from the effect,
+      // which this rule flags. Keep it visible as a warning and raise it back
+      // to "error" once the fetching is reworked.
+      "react-hooks/set-state-in-effect": "warn",
+    },
+  },
 ];
 
 export default eslintConfig;

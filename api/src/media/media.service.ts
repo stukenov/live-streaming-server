@@ -46,7 +46,7 @@ export class MediaService {
     return { success: true, message: `Path ${name} kicked` };
   }
 
-  private async fetchFromMediaServer(endpoint: string) {
+  private async fetchFromMediaServer(endpoint: string): Promise<unknown> {
     const url = `${this.mediaServerUrl}${endpoint}`;
     try {
       const res = await fetch(url);
@@ -56,7 +56,7 @@ export class MediaService {
           HttpStatus.BAD_GATEWAY,
         );
       }
-      return res.json();
+      return (await res.json()) as unknown;
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new HttpException(
