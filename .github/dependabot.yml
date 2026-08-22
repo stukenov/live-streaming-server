@@ -8,6 +8,12 @@ updates:
       all-updates:
         patterns:
           - "*"
+    ignore:
+      # ts-jest 29 peers on typescript "<7" and Next 16 rejects the TS 7
+      # compiler API, so major TypeScript bumps break the build here.
+      # Remove once both support TypeScript 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "npm"
     directory: "/dash"
     schedule:
@@ -16,6 +22,12 @@ updates:
       all-updates:
         patterns:
           - "*"
+    ignore:
+      # ts-jest 29 peers on typescript "<7" and Next 16 rejects the TS 7
+      # compiler API, so major TypeScript bumps break the build here.
+      # Remove once both support TypeScript 7.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
