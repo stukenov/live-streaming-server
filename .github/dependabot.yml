@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/api"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       all-updates:
         patterns:
@@ -17,7 +17,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/dash"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       all-updates:
         patterns:
@@ -35,7 +35,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     groups:
       all-updates:
         patterns:
