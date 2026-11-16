@@ -26,8 +26,6 @@
   <a href="#contributing">Contributing</a>
 </p>
 
-> **Screenshot:** A dashboard screenshot belongs here. Capture the running dashboard at `http://localhost:3000`, drop the image into the repo (e.g. `docs/dashboard.png`), and reference it with `![Dashboard](docs/dashboard.png)`.
-
 ---
 
 ## Why Live Streaming Server?
